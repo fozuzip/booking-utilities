@@ -1,10 +1,8 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import r2wc from "@r2wc/react-to-web-component";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+import { Greeting } from "./Greeting.tsx";
+import "./index.css";
+
+const WebGreeting = r2wc(Greeting);
+
+customElements.define("web-greeting", WebGreeting);
