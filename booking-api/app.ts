@@ -1,36 +1,75 @@
 import { JSONPreset } from 'lowdb/node'
 import express, { Express, Request, Response } from 'express';
+import bodyParser from 'body-parser';
 
 type Data = {
-  posts: string[]
+  users: {id: number, username: string, password: string}[],
+  bookings: {id: number, from: string, to: string, persons: number}[]
 }
 
-const runDB = async () => {
+const init = async () => {
   // Read or create db.json
-const defaultData = { posts: [] }
-const db = await JSONPreset<Data>('db.json', defaultData)
+  const defaultData = { users: [{id: 1, username: "admin", password: "admin"}], bookings: [] }
+  const db = await JSONPreset<Data>('db.json', defaultData)
+  await db.write();
 
-// Create and query items using plain JavaScript
-db.data.posts.push('hello world')
-const firstPost = db.data.posts[0]
+  const app: Express = express(); 
+  app.use(bodyParser.json())
 
-// If you don't want to type db.data everytime, you can use destructuring assignment
-const { posts } = db.data
-posts.push('hello world')
+  app.get('/', (req: Request, res: Response) => {
+    res.send({ success: true, message: 'bookings-api' });
+  });
 
-// Finally write db.data content to file
-await db.write()
+
+  app.post('/login', (req: Request, res: Response) => {
+    const { username, password } = req.body;
+    const user = db.data.users.find(user => user.username === username && user.password === password);
+    if (user) {
+      res.send({ success: true, user });
+    } else {
+      res.send({ success: false });
+    }
+  });
+
+  app.post('/logout', (req: Request, res: Response) => {
+    res.send({ success: true });
+  });
+
+  app.get('/bookings', (req: Request, res: Response) => {
+    const { from, to } = req.query;
+    if (from && to) {
+      const bookings = db.data.bookings.filter(booking => booking.from >= from && booking.to <= to);
+      res.send({ success: true, bookings });
+    } else {
+      res.send({ success: true, bookings: db.data.bookings });
+    }
+  });
+
+  app.post('/bookings', (req: Request, res: Response) => {
+    const { from, to, persons } = req.body;
+    const id = db.data.bookings.reduce((max, booking) => Math.max(max, booking.id), 0) + 1;
+    const booking = { id, from, to, persons };
+    db.data.bookings.push(booking);
+    db.write();
+    res.send({ success: true, booking });
+  });
+
+  app.delete('/bookings/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const index = db.data.bookings.findIndex(booking => booking.id === id);
+    if (index > -1) {
+      db.data.bookings.splice(index, 1);
+      db.write();
+      res.send({ success: true });
+    } else {
+      res.send({ success: false });
+    }
+  });
+
+  app.listen(8000, () => {
+    console.log(`⚡️[server]: Server is running at http://localhost:8000`);
+  });
 };
 
-runDB();
+init();
 
-const app: Express = express();
-
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Express + TypeScript Server');
-});
-
-app.listen(8000, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:8000`);
-});
