@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronRight, Minus, Plus } from "lucide-react";
+import { ChevronRight, Loader2, Minus, Plus } from "lucide-react";
 
 import { Button } from "./components/button";
 import {
@@ -37,6 +37,7 @@ export const BookingWidget = ({
     to: undefined,
   });
   const [selectedPersons, setSelectedPersons] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { bookings, isLoading, mutate } = useGetBookings({
     bookableId,
@@ -53,22 +54,14 @@ export const BookingWidget = ({
     [bookings],
   );
 
-  const onRangeChange = (range: DateRange) => {
-    if (
-      range?.from &&
-      range?.to &&
-      hasOverlap({ from: range.from, to: range.to }, disabledDays)
-    )
-      return;
-    setRange(range);
-  };
-
   const onContinue = async () => {
+    setIsSubmitting(true);
     const { success, booking } = await createBooking({
       from: format(range.from!, "yyyy-MM-dd"),
       to: format(range.to!, "yyyy-MM-dd"),
       persons: selectedPersons,
     });
+    setIsSubmitting(false);
 
     if (!success) return;
 
@@ -98,7 +91,7 @@ export const BookingWidget = ({
             fromDate={sub(new Date(), { days: 1 })}
             disabled={disabledDays}
             selected={range}
-            onSelect={onRangeChange}
+            onSelect={setRange}
           />
           <p className="text-black/40">Select the number of persons</p>
           <div className="flex justify-between px-4 pb-4">
@@ -116,11 +109,9 @@ export const BookingWidget = ({
             <Button
               variant="secondary"
               className="flex h-10 w-10 items-center justify-center rounded-full p-0"
+              onClick={() => setSelectedPersons((prev) => prev + 1)}
             >
-              <Plus
-                className="h-5 w-5"
-                onClick={() => setSelectedPersons((prev) => prev + 1)}
-              />
+              <Plus className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -133,7 +124,11 @@ export const BookingWidget = ({
           >
             <div className="flex items-center gap-2 text-sm">
               <span>Continue</span>
-              <ChevronRight className="h-4 w-4" />
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
             </div>
           </Button>
         </DialogFooter>
