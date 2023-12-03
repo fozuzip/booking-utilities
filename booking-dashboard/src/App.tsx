@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/auth-context";
 import Main from "@/pages/Main";
 import Login from "@/pages/Login";
 import { ProtectedRoute } from "@/components/protected-route";
+import { ThemeProvider } from "./context/theme-provider";
 
 const router = createBrowserRouter([
   {
@@ -23,9 +24,11 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
