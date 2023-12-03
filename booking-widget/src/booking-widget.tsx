@@ -16,16 +16,21 @@ import { Calendar } from "./components/calendar";
 import { DateRange } from "react-day-picker";
 import { startOfMonth, sub, format, endOfMonth } from "date-fns";
 
-import { useBookings } from "./apiService";
+import { Booking, createBooking, useGetBookings } from "./apiService";
 import { hasOverlap } from "./utils";
 
 interface BookingProps {
   title: string;
   bookableId: number;
+  onBooking: (booking: Booking) => void;
 }
-export const BookingWidget = ({ title, bookableId }: BookingProps) => {
-  const today = new Date();
-  const [month, setMonth] = useState<Date>(today);
+export const BookingWidget = ({
+  title,
+  bookableId,
+  onBooking,
+}: BookingProps) => {
+  const [open, setOpen] = useState(false);
+  const [month, setMonth] = useState<Date>(new Date());
 
   const [range, setRange] = useState<DateRange>({
     from: undefined,
@@ -33,7 +38,7 @@ export const BookingWidget = ({ title, bookableId }: BookingProps) => {
   });
   const [selectedPersons, setSelectedPersons] = useState(1);
 
-  const { bookings, isLoading } = useBookings({
+  const { bookings, isLoading, mutate } = useGetBookings({
     bookableId,
     from: format(startOfMonth(month), "yyyy-MM-dd"),
     to: format(endOfMonth(month), "yyyy-MM-dd"),
@@ -58,8 +63,24 @@ export const BookingWidget = ({ title, bookableId }: BookingProps) => {
     setRange(range);
   };
 
+  const onContinue = async () => {
+    const { success, booking } = await createBooking({
+      from: format(range.from!, "yyyy-MM-dd"),
+      to: format(range.to!, "yyyy-MM-dd"),
+      persons: selectedPersons,
+    });
+
+    if (!success) return;
+
+    setRange({ from: undefined, to: undefined });
+    setOpen(false);
+    mutate();
+
+    onBooking(booking);
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-[200px]" disabled={isLoading}>
           {isLoading ? "LOADING..." : "BOOK NOW"}
@@ -108,6 +129,7 @@ export const BookingWidget = ({ title, bookableId }: BookingProps) => {
             className="rounded-full py-2.5"
             type="submit"
             disabled={!range?.from || !range?.to}
+            onClick={onContinue}
           >
             <div className="flex items-center gap-2 text-sm">
               <span>Continue</span>

@@ -16,6 +16,8 @@ const init = async () => {
   const app: Express = express(); 
   app.use(cors());
   app.use(bodyParser.json())
+  // Add a delay to all requests to simulate a real network
+  app.use(function(req,res,next){setTimeout(next,500)});
 
   app.get('/', (req: Request, res: Response) => {
     res.send({ success: true, message: 'bookings-api' });

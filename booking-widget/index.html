@@ -7,10 +7,47 @@
     <title>Booking widget</title>
   </head>
   <body>
-    <div class="flex h-full w-full items-center justify-center">
-      <web-greeting title="Make a booking" bookable-id="20934"></web-greeting>
+    <div
+      class="flex h-full w-full items-center justify-center"
+      id="bookingContainer"
+    >
+      <booking-widget
+        title="Make a booking"
+        bookable-id="20934"
+        on-booking="handleBookingCreated"
+      ></booking-widget>
+    </div>
+    <div
+      id="successMessage"
+      class="flex h-full w-full flex-col items-center justify-center gap-8"
+      style="display: none"
+    >
+      <h1 class="text-4xl font-bold text-blue-800">Booking created!</h1>
+      <div class="flex items-center">
+        <span class="mr-4" id="bookingFrom"></span> -
+        <span class="ml-4" id="bookingTo"></span>
+      </div>
     </div>
 
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.handleBookingCreated = (booking) => {
+        // Hide the booking widget
+        const bookingContainer = document.getElementById("bookingContainer");
+        bookingContainer.style.display = "none";
+
+        // Show the success message
+        const successMessage = document.getElementById("successMessage");
+        successMessage.style.display = "flex";
+
+        // Display booking dates
+        const bookingFrom = document.getElementById("bookingFrom");
+        const bookingTo = document.getElementById("bookingTo");
+
+        // Assuming booking contains 'from' and 'to' properties with date strings
+        bookingFrom.textContent = booking.from;
+        bookingTo.textContent = booking.to;
+      };
+    </script>
   </body>
 </html>
