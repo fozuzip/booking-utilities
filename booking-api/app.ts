@@ -1,6 +1,7 @@
 import { JSONPreset } from 'lowdb/node'
 import express, { Express, Request, Response } from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 type Data = {
   users: {id: number, username: string, password: string}[],
@@ -8,12 +9,12 @@ type Data = {
 }
 
 const init = async () => {
-  // Read or create db.json
   const defaultData = { users: [{id: 1, username: "admin", password: "admin"}], bookings: [] }
   const db = await JSONPreset<Data>('db.json', defaultData)
   await db.write();
 
   const app: Express = express(); 
+  app.use(cors());
   app.use(bodyParser.json())
 
   app.get('/', (req: Request, res: Response) => {
@@ -35,7 +36,7 @@ const init = async () => {
     res.send({ success: true });
   });
 
-  app.get('/bookings', (req: Request, res: Response) => {
+  app.get('/booking', (req: Request, res: Response) => {
     const { from, to } = req.query;
     if (from && to) {
       const bookings = db.data.bookings.filter(booking => booking.from >= from && booking.to <= to);
@@ -45,7 +46,7 @@ const init = async () => {
     }
   });
 
-  app.post('/bookings', (req: Request, res: Response) => {
+  app.post('/booking', (req: Request, res: Response) => {
     const { from, to, persons } = req.body;
     const id = db.data.bookings.reduce((max, booking) => Math.max(max, booking.id), 0) + 1;
     const booking = { id, from, to, persons };
@@ -54,7 +55,7 @@ const init = async () => {
     res.send({ success: true, booking });
   });
 
-  app.delete('/bookings/:id', (req: Request, res: Response) => {
+  app.delete('/booking/:id', (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const index = db.data.bookings.findIndex(booking => booking.id === id);
     if (index > -1) {

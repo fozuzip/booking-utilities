@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { ChevronRight, Minus, Plus } from "lucide-react";
 
 import { Button } from "./components/button";
@@ -14,34 +14,56 @@ import {
 import "./index.css";
 import { Calendar } from "./components/calendar";
 import { DateRange } from "react-day-picker";
-import { sub } from "date-fns";
+import { startOfMonth, sub, format, endOfMonth } from "date-fns";
+
+import { useBookings } from "./apiService";
+import { hasOverlap } from "./utils";
 
 interface BookingProps {
   title: string;
-  bookingId: number;
+  bookableId: number;
 }
-export const BookingWidget = ({ title, bookingId }: BookingProps) => {
-  const [range, setRange] = useState<DateRange | undefined>({
+export const BookingWidget = ({ title, bookableId }: BookingProps) => {
+  const today = new Date();
+  const [month, setMonth] = useState<Date>(today);
+
+  const [range, setRange] = useState<DateRange>({
     from: undefined,
     to: undefined,
   });
   const [selectedPersons, setSelectedPersons] = useState(1);
 
-  useEffect(() => {
-    const params = new URLSearchParams({
-      bookingId: bookingId.toString(),
-      from: "2023-12-03",
-      to: "2023-12-31",
-    });
-    fetch(`/api/bookable?${params}`)
-      .then((res) => res.json())
-      .then(console.log);
-  }, []);
+  const { bookings, isLoading } = useBookings({
+    bookableId,
+    from: format(startOfMonth(month), "yyyy-MM-dd"),
+    to: format(endOfMonth(month), "yyyy-MM-dd"),
+  });
+
+  const disabledDays = useMemo(
+    () =>
+      bookings.map((booking) => ({
+        from: new Date(booking.from),
+        to: new Date(booking.to),
+      })),
+    [bookings],
+  );
+
+  const onRangeChange = (range: DateRange) => {
+    if (
+      range?.from &&
+      range?.to &&
+      hasOverlap({ from: range.from, to: range.to }, disabledDays)
+    )
+      return;
+    setRange(range);
+  };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="w-[200px]">BOOK NOW</Button>
+        <Button className="w-[200px]" disabled={isLoading}>
+          {isLoading ? "LOADING..." : "BOOK NOW"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="text-base sm:max-w-[450px]">
         <DialogHeader>
@@ -50,11 +72,12 @@ export const BookingWidget = ({ title, bookingId }: BookingProps) => {
         <div className="flex flex-col gap-4 p-4">
           <p className=" text-black/40">Choose from the available dates</p>
           <Calendar
-            mode="range"
+            month={month}
+            onMonthChange={setMonth}
             fromDate={sub(new Date(), { days: 1 })}
+            disabled={disabledDays}
             selected={range}
-            onSelect={setRange}
-            className="rounded-md border"
+            onSelect={onRangeChange}
           />
           <p className="text-black/40">Select the number of persons</p>
           <div className="flex justify-between px-4 pb-4">
@@ -84,7 +107,7 @@ export const BookingWidget = ({ title, bookingId }: BookingProps) => {
           <Button
             className="rounded-full py-2.5"
             type="submit"
-            disabled={!range.from || !range.to}
+            disabled={!range?.from || !range?.to}
           >
             <div className="flex items-center gap-2 text-sm">
               <span>Continue</span>

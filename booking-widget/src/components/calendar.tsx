@@ -1,21 +1,58 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { DateRange, DayPicker } from "react-day-picker";
 
-import { cn } from "../utils";
+import { cn, hasOverlap } from "../utils";
+import { Button } from "./button";
+import { isSameMonth } from "date-fns";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+type CalendarProps = Omit<
+  React.ComponentProps<typeof DayPicker>,
+  "selected"
+> & {
+  onMonthChange: (month: Date) => void;
+  onSelect: (range: DateRange) => void;
+  selected: DateRange;
+  disabled: { from: Date; to: Date }[];
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  month,
+  selected,
+  onSelect,
+  onMonthChange,
+  disabled,
   ...props
 }: CalendarProps) {
+  const today = new Date();
+
+  const onRangeChange = (range: DateRange | undefined) => {
+    if (!range) {
+      onSelect({ from: undefined, to: undefined });
+      return;
+    }
+    if (
+      range?.from &&
+      range?.to &&
+      hasOverlap({ from: range.from, to: range.to }, disabled)
+    )
+      return;
+    onSelect(range);
+  };
+
   return (
     <DayPicker
+      mode="range"
+      month={month}
+      disabled={disabled}
+      selected={selected}
+      onSelect={onRangeChange}
+      onMonthChange={onMonthChange}
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("rounded-md border p-3", className)}
       classNames={{
         months: "w-full",
         month: "space-y-4",
@@ -50,6 +87,23 @@ function Calendar({
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
+      footer={
+        <div className="px-4 pt-2">
+          <Button
+            variant="ghost"
+            className="p-0"
+            disabled={month && isSameMonth(today, month)}
+            onClick={() => {
+              onMonthChange(today);
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              <span>JUMP TO TODAY</span>
+            </div>
+          </Button>
+        </div>
+      }
       {...props}
     />
   );
