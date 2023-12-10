@@ -1,6 +1,6 @@
 import { LogoutButton } from "../components/logout-button";
 
-function App() {
+function Home() {
   return (
     <h1 className="text-3xl font-bold underline">
       Hello world!
@@ -9,4 +9,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;
