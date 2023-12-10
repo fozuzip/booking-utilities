@@ -2,6 +2,8 @@ import { JSONPreset } from 'lowdb/node'
 import express, { Express, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import Pusher from "pusher";
+import 'dotenv/config';
 
 type Data = {
   users: {id: number, username: string, password: string}[],
@@ -9,10 +11,20 @@ type Data = {
 }
 
 const init = async () => {
+  //DB
   const defaultData = { users: [{id: 1, username: "admin", password: "admin"}], bookings: [] }
   const db = await JSONPreset<Data>('db.json', defaultData)
   await db.write();
+  
+  //Pusher
+  const pusher = new Pusher({
+    appId: process.env.PUSHER_APP_ID || '',
+    key: process.env.PUSHER_KEY || '',
+    secret: process.env.PUSHER_SECRET || '',
+    cluster: process.env.PUSHER_CLUSTER || '',
+  })
 
+  //Server
   const app: Express = express(); 
   app.use(cors());
   app.use(bodyParser.json())
@@ -55,6 +67,11 @@ const init = async () => {
     const booking = { id, from, to, persons };
     db.data.bookings.push(booking);
     db.write();
+
+    pusher.trigger("booking", "created", {
+      booking
+    });  
+
     res.send({ success: true, booking });
   });
 
