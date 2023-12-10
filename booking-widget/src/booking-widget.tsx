@@ -17,7 +17,6 @@ import { DateRange } from "react-day-picker";
 import { startOfMonth, sub, format, endOfMonth } from "date-fns";
 
 import { Booking, createBooking, useGetBookings } from "./apiService";
-import { hasOverlap } from "./utils";
 
 interface BookingProps {
   title: string;

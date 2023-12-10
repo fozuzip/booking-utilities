@@ -74,9 +74,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 </Link>
               </div>
             </aside>
-            <main className="relative h-full border-r py-6 lg:py-8">
-              {children}
-            </main>
+            <main className="relative h-full py-6 lg:py-8 ">{children}</main>
           </div>
         </div>
         <footer className="py-6 md:px-8 md:py-0">

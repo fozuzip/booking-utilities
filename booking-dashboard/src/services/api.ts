@@ -6,6 +6,13 @@ export type User = {
   password: string;
 };
 
+export type Booking = {
+  id: number;
+  from: string;
+  to: string;
+  persons: number;
+};
+
 const api = axios.create({
   baseURL: "http://localhost:8000",
 });
@@ -17,3 +24,5 @@ export const login = (username: string, password: string) => {
 export const logout = () => {
   return api.post("/logout").then((res) => res.data);
 };
+
+export const fetcher = (url: string) => api.get(url).then((res) => res.data);
