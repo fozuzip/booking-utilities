@@ -30,7 +30,8 @@ const init = async () => {
     if (user) {
       res.send({ success: true, user });
     } else {
-      res.send({ success: false });
+
+      res.status(401).send('Invalid username or password');
     }
   });
 
