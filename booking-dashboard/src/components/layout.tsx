@@ -23,6 +23,35 @@ export const Layout = ({ children }: LayoutProps) => {
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+            <nav className="flex items-center space-x-6 text-sm font-medium md:hidden">
+              <Link
+                to="/home"
+                className={cn(
+                  "hover:text-foreground/80 text-foreground/60 transition-colors",
+                  pathname === "/home" && "text-foreground",
+                )}
+              >
+                Home
+              </Link>
+              <Link
+                to="/bookings"
+                className={cn(
+                  "hover:text-foreground/80 text-foreground/60 transition-colors",
+                  pathname === "/bookings" && "text-foreground",
+                )}
+              >
+                Bookings
+              </Link>
+              <Link
+                to="/calendar"
+                className={cn(
+                  "hover:text-foreground/80 text-foreground/60 transition-colors",
+                  pathname === "/calendar" && "text-foreground",
+                )}
+              >
+                Calendar
+              </Link>
+            </nav>
             <div className="flex items-center">
               <NotificationsMenu />
               <ModeToggle />
@@ -80,7 +109,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <footer className="py-6 md:px-8 md:py-0">
           <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
             <p className="text-muted-foreground text-center text-sm leading-loose md:text-left">
-              The source code is available on
+              The source code is available on{" "}
               <a
                 href="https://github.com/fozuzip/booking-utilities"
                 target="_blank"

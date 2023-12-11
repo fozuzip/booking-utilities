@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import {
   ColumnDef,
@@ -21,6 +21,7 @@ import {
 import { parseISO, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
+import { useNotifications } from "@/context/notification-context";
 
 export const columns: ColumnDef<Booking>[] = [
   {
@@ -93,10 +94,18 @@ export const columns: ColumnDef<Booking>[] = [
 ];
 
 function Bookings() {
-  const { data, error, isLoading } = useSWR<{
+  const { data, mutate } = useSWR<{
     success: boolean;
     bookings: Booking[];
   }>("/booking", fetcher);
+
+  // Revalidate the data when a new notification is received
+  const { hasNewNotifications } = useNotifications();
+  useEffect(() => {
+    if (hasNewNotifications) {
+      mutate();
+    }
+  }, [hasNewNotifications]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
