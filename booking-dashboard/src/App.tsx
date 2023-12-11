@@ -5,14 +5,18 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import { AuthProvider } from "./context/auth-context";
-import Home from "@/pages/Home";
-import Login from "@/pages/Login";
-import { ProtectedRoute } from "@/components/protected-route";
 import { ThemeProvider } from "./context/theme-provider";
+import { AuthProvider } from "./context/auth-context";
+import { NotificationsProvider } from "./context/notification-context";
+
+import { ProtectedRoute } from "@/components/protected-route";
 import { Layout } from "./components/layout";
+
+import Login from "@/pages/Login";
+import Home from "@/pages/Home";
 import Bookings from "./pages/Bookings";
-import { Calendar } from "lucide-react";
+import Calendar from "./pages/Calendar";
+import { Toaster } from "./components/ui/toaster";
 
 const routesWithLayout = (routes: RouteObject[]) =>
   routes.map((route) => ({
@@ -69,7 +73,10 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <AuthProvider>
-        <RouterProvider router={router} />
+        <NotificationsProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </NotificationsProvider>
       </AuthProvider>
     </ThemeProvider>
   );

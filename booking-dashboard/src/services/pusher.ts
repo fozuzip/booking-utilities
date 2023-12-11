@@ -1,15 +1,34 @@
-import Pusher from "pusher-js";
+import Pusher, { type Channel } from "pusher-js";
+import { SubscriptionService } from "@/lib/subscription-service";
 
 // Enable pusher logging - don't include this in production
 Pusher.logToConsole = true;
 
-console.log("init pusher");
+class PusherSubscriptionService extends SubscriptionService {
+  service: Pusher | null = null;
+  channel: Channel | null = null;
 
-export const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
-  cluster: import.meta.env.VITE_PUSHER_CLUSTER,
-});
+  constructor(channelName: string) {
+    super(channelName);
+  }
 
-// export const channel = pusher.subscribe("my-channel");
-// channel.bind("my-event", function (data) {
-//   alert(JSON.stringify(data));
-// });
+  connect() {
+    this.service = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+      cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+    });
+    this.channel = this.service?.subscribe(this.channelName) || null;
+  }
+  disconnect() {
+    this.channel?.unsubscribe();
+    this.service?.disconnect();
+  }
+
+  subscribe<T>(event: string, callback: (data: T) => void) {
+    this.channel?.bind(event, callback);
+  }
+  unsubscribe(event: string) {
+    this.channel?.unbind(event);
+  }
+}
+
+export const pusher = new PusherSubscriptionService("booking");

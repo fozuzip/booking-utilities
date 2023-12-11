@@ -70,7 +70,7 @@ const init = async () => {
 
     pusher.trigger("booking", "created", {
       booking
-    });  
+    });
 
     res.send({ success: true, booking });
   });
