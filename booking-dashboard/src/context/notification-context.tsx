@@ -24,12 +24,14 @@ export type Notification = {
 interface NotificationsContext {
   notifications: Notification[];
   clear: (id: string) => void;
+  markAsSeen: (id: string) => void;
   hasNewNotifications: boolean;
 }
 
 const NotificationsContext = createContext<NotificationsContext>({
   notifications: [],
   clear: () => {},
+  markAsSeen: () => {},
   hasNewNotifications: false,
 });
 const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
@@ -59,7 +61,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
             "dd/MM/yyyy",
           )} - ${format(parseISO(booking.to), "dd/MM/yyyy")}`,
           action: (
-            <ToastAction altText="ok" onClick={() => clear(id)}>
+            <ToastAction altText="ok" onClick={() => markAsSeen(id)}>
               Got it
             </ToastAction>
           ),
@@ -73,6 +75,18 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const clear = (id: string) => {
+    console.log(
+      id,
+      notifications,
+      id === notifications[0].id,
+      notifications.filter((notification) => notification.id !== id),
+    );
+    setNotification((notifications) =>
+      notifications.filter((notification) => notification.id !== id),
+    );
+  };
+
+  const markAsSeen = (id: string) => {
     setNotification((notifications) =>
       notifications.map((notification) =>
         notification.id === id ? { ...notification, seen: true } : notification,
@@ -96,6 +110,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         notifications,
         clear,
+        markAsSeen,
         hasNewNotifications: newNotifications > 0,
       }}
     >

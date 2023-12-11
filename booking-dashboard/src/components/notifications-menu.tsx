@@ -2,6 +2,7 @@ import { Bell } from "lucide-react";
 
 import {
   NotificationType,
+  Notification,
   useNotifications,
 } from "@/context/notification-context";
 import { Button } from "./ui/button";
@@ -11,29 +12,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { format, parseISO } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, formatDateRange } from "@/lib/utils";
 
 export const NotificationsMenu = () => {
-  const { notifications, clear } = useNotifications();
+  const { notifications, markAsSeen } = useNotifications();
   const newNotifications =
     notifications.filter((notification) => !notification.seen).length > 0;
 
-  const renderNotification = (notification) => {
+  const renderNotification = (notification: Notification) => {
     const { id, type, booking, seen } = notification;
-    const dateStr = `${format(parseISO(booking.from), "dd/MM/yyyy")} - ${format(
-      parseISO(booking.to),
-      "dd/MM/yyyy",
-    )}`;
+    const dateStr = formatDateRange(booking.from, booking.to);
     const message =
       type === NotificationType.BookingCreated
         ? `New booking ${dateStr}`
         : type === NotificationType.BookingUpdated
           ? `Changes on booking ${dateStr}`
           : `Canceled booking ${dateStr}`;
-    console.log(seen);
+
     return (
-      <DropdownMenuItem key={id} onMouseEnter={() => clear(id)}>
+      <DropdownMenuItem key={id} onMouseEnter={() => markAsSeen(id)}>
         <span
           className={cn(
             "mr-2 h-2 w-2 rounded-full bg-green-300 transition-opacity",
