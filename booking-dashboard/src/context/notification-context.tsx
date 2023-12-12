@@ -75,12 +75,6 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const clear = (id: string) => {
-    console.log(
-      id,
-      notifications,
-      id === notifications[0].id,
-      notifications.filter((notification) => notification.id !== id),
-    );
     setNotification((notifications) =>
       notifications.filter((notification) => notification.id !== id),
     );
